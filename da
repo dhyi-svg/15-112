@@ -1,0 +1,59 @@
+from cmu_graphics import *
+import random
+
+def onAppStart(app):
+    app.centerx = app.width//2
+    app.centery = app.width//2
+    app.homeScreen = True
+    app.characterSelect = False
+    app.gameStarted = False
+    
+    
+
+def startScreen(app):
+    drawLabel('SHOOT YOUR BOSS!', app.centerx, app.centery -30, size = 30, font = 'orbitron', fill = 'white', bold = True)
+
+
+def background(app):
+    backdrop = rgb(30, 40, 55)
+    drawRect(0,0,app.width,app.height,fill = backdrop)
+    for i in range(7):
+        cx = app.width/6*((random.randint(0,7))) + 30
+        cy = app.height/6*(random.randint(0,7)) + 30
+        drawStar(cx,cy,10, 4, rotateAngle = random.randint(0,360), roundness = 50, fill = 'gold')
+    drawOval(app.centerx, app.height, app.width, app.height/(2), fill = 'coral')
+    drawRect(app.centerx, app.centery + 40, app.width//2, 60, align = 'center', fill = 'moccasin')
+    drawLabel('START', app.centerx, app.centery + 40, size = 25, align = 'center', font = 'orbitron')
+
+def checkInRect(app,mouseX,mouseY,x,y,width,height, align):
+    if align == 'center':
+        left = x-width//2
+        top = y-width//2
+    else:
+        left = x
+        top = y
+    if (left)<= mouseX <= (left+width) and (top) <= mouseY <=(top+height):
+        return True
+    return False
+
+def onMouseClick(app,mouseX,mouseY):
+    if not app.characterSelect:
+        if checkInRect(app,mouseX, mouseY, app.centerx, app.centery+40, app.width//2, 60, 'center'):
+            print('yay')
+            app.characterSelect = True
+            app.homeScreen = False
+    else:
+        pass
+
+def redrawAll(app):
+    background(app)
+    if app.homeScreen:
+        startScreen(app)
+    elif app.characterSelect:
+        pass
+
+
+def main():
+    runApp()
+
+main()
