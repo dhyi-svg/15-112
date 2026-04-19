@@ -36,20 +36,21 @@ def background(app):
     drawOval(app.centerx, app.height, app.width, app.height/(2), fill = 'coral')
 
 def startScreen(app):
-    drawLabel('SHOOT YOUR BOSS!', app.centerx, app.centery -30, size = 30, font = 'Orbitron', fill = 'white', bold = True)
-    drawRect(app.centerx, app.centery + 40, app.centerx, 60, align = 'center', fill = 'moccasin')
-    drawLabel('START', app.centerx, app.centery + 40, size = 25, align = 'center', font = 'Orbitron')
+    drawLabel('SHOOT YOUR BOSS!', app.centerx, app.height*2//5, size = app.width*3//40, font = 'Orbitron', fill = 'white', bold = True)
+    drawRect(app.centerx, app.height*3//5, app.centerx, app.height*3//20, align = 'center', fill = 'moccasin')
+    drawLabel('START', app.centerx, app.height*3//5, size = app.width//20, align = 'center', font = 'Orbitron')
 
 def characterSelect(app):
-    drawLabel('CHOOSE THE BOSS', app.centerx, app.centery//4, size = 30, font = 'Orbitron', fill = 'white', bold = True)
+    drawLabel('CHOOSE THE BOSS', app.centerx, app.height//8, size = app.width*3//40, font = 'Orbitron', fill = 'white', bold = True)
     drawImage('kosbie.png', app.centerx - 60, app.centery - 70, align = 'center')
     drawImage('sands.png', app.centerx + 60, app.centery -70, align = 'center')
     drawImage('thomas.jpeg', app.centerx -60, app.centery +50, align = 'center')
     drawImage('jiao.jpg', app.centerx +60, app.centery + 50, align = 'center')
 
 def startGame(app):
-    drawCircle(app.centerx,app.height*3//4, app.width//11, fill = 'gray', border = 'black')
-    drawCircle(app.centerx,app.height*3//4, app.width//16, fill = 'gray', border = 'black')
+    minimum = min(app.width, app.height)
+    drawCircle(app.centerx, app.height*3//4, minimum//11, fill = 'gray', border = 'black')
+    drawCircle(app.centerx, app.height*3//4, minimum//16, fill = 'gray', border = 'black')
     startX = app.centerx
     startY = app.height*3//4
     ux,uy = followMouse(app,startX,startY,app.lineX,app.lineY)
@@ -68,8 +69,8 @@ def startGame(app):
 
 def endScreen(app):
     if app.hp < 1:
-        drawLabel(f"GGs!", app.centerx, app.height//4,size = app.width//4, fill = 'white',bold = True)
-        drawLabel(f"Your final score was: {app.score}!", app.centerx, app.centery,size = app.width//5, fill = 'white',bold = True, font = 'Orbitron')
+        drawLabel(f"GGs", app.centerx, app.height//4,size = app.width//4, fill = 'white',bold = True, align = 'center')
+        drawLabel(f"Your final score was: {app.score}!", app.centerx, app.centery,size = app.width//14, fill = 'white',bold = True, font = 'Orbitron', align = 'center')
     else:
         drawLabel(f"Wow I'm impressed!", app.centerx, app.height//4,size = app.width//4, fill = 'white',bold = True)
         drawLabel(f"Your final score was: {app.score}!", app.centerx, app.centery,size = app.width//5, fill = 'white',bold = True, font = 'Orbitron')
@@ -78,9 +79,11 @@ def followMouse(app,startX,startY,mX,mY):
     dx = mX - startX
     dy = mY - startY
     length = (dx**2 + dy**2)**(0.5)
-    ux = dx/length
-    uy = dy/length
-    return (ux,uy)
+    if length > 0:
+        ux = dx/length
+        uy = dy/length
+        return (ux,uy)
+    return (1,1)
 
 def distance(x0,y0,x1,y1):
     return((x0-x1)**2 + (y0-y1)**2)**0.5
@@ -98,9 +101,7 @@ def checkInCircle(x0,y0,r,x1,y1):
 
 def homeScreenCheck(app,mouseX,mouseY):
     if checkInRect(app,mouseX, mouseY, 
-                   app.centerx-app.width//4, 
-                   app.centery+40-60, 
-                   app.centerx, 60,):
+                   app.centerx-app.centerx//2, app.height*3//5-app.height*3//40, app.centerx, app.height*3//20):
             app.characterSelect = True
             app.homeScreen = False
 
@@ -129,6 +130,8 @@ def checkGameEnd(app):
         app.gameEnded = True
 
 def onStep(app):
+    app.centerx = app.width//2
+    app.centery = app.height//2
     if app.gameStarted:
         app.timeCounter += 1
         moveLaser(app)
@@ -146,7 +149,10 @@ class Asteroid:
         self.x = random.randint(0,app.width)
         self.y = -50
         self.speed = random.randint(2, 6)
-        self.size = random.randint(30, 60)
+        minimum = min(app.width, app.height)
+        lower = minimum*3//40
+        higher = minimum*3//20
+        self.size = random.randint(lower, higher)
         self.color = 'gray'
         self.hit = 0
 
@@ -185,7 +191,7 @@ def removeAsteroids(app):
             asteroid.color = 'red'
         if asteroid.y > app.height - app.height//4:
             app.asteroids.remove(asteroid)
-            app.hp - 1
+            app.hp -= 1
         for laser in app.lasers:
             if checkInCircle(asteroid.x,asteroid.y,asteroid.size,laser.x,laser.y):
                 asteroid.hit += 1
@@ -215,14 +221,24 @@ def moveAsteroids(app):
 def drawAsteroids(app):
     for a in app.asteroids:
         drawCircle(a.x, a.y, a.size, fill= a.color, border='black')
-        if app.character == 'kosbie':
-            drawImage('kosbie_small.png',a.x,a.y,align = 'center')
-        elif app.character == 'jiao':
-            drawImage('jiao_small.jpg',a.x,a.y,align = 'center')
-        elif app.character == 'sands':
-            drawImage('sands_small.png',a.x,a.y,align = 'center')
-        elif app.character == 'thomas':
-            drawImage('thomas_small.jpeg',a.x,a.y,align = 'center')
+        if min(app.width, app.height) < 800:
+            if app.character == 'kosbie':
+                drawImage('kosbie_small.png',a.x,a.y,align = 'center')
+            elif app.character == 'jiao':
+                drawImage('jiao_small.jpg',a.x,a.y,align = 'center')
+            elif app.character == 'sands':
+                drawImage('sands_small.png',a.x,a.y,align = 'center')
+            elif app.character == 'thomas':
+                drawImage('thomas_small.jpeg',a.x,a.y,align = 'center')
+        else:
+            if app.character == 'kosbie':
+                drawImage('kosbie.png',a.x,a.y,align = 'center')
+            elif app.character == 'jiao':
+                drawImage('jiao.jpg',a.x,a.y,align = 'center')
+            elif app.character == 'sands':
+                drawImage('sands.png',a.x,a.y,align = 'center')
+            elif app.character == 'thomas':
+                drawImage('thomas.jpeg',a.x,a.y,align = 'center')
    
 
 def generateLaser(app,mouseX,mouseY):
@@ -261,6 +277,13 @@ def onMousePress(app,mouseX,mouseY):
     elif app.gameStarted:
         generateLaser(app,mouseX,mouseY)
 
+def onKeyPress(app,key):
+    if key == 'l':
+        app.stepsPerSecond = 60
+    elif key == 'j':
+        app.stepsPerSecond = 10
+    elif key == 'k':
+        app.stepsPerSecond = 30
 
 def redrawAll(app):
     background(app)
